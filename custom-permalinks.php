@@ -4,7 +4,7 @@ Plugin Name: Custom Permalinks
 Plugin URI: http://atastypixel.com/blog/wordpress/plugins/custom-permalinks/
 Donate link: http://atastypixel.com/blog/wordpress/plugins/custom-permalinks/
 Description: Set custom permalinks on a per-post basis
-Version: 0.7.16
+Version: 0.7.18
 Author: Michael Tyson
 Author URI: http://atastypixel.com/blog
 */
@@ -160,13 +160,17 @@ function custom_permalinks_request($query) {
 
 	if ( !$request ) return $query;
 	
-	$sql = "SELECT $wpdb->posts.ID, $wpdb->postmeta.meta_value, $wpdb->posts.post_type FROM $wpdb->posts  ".
-				"LEFT JOIN $wpdb->postmeta ON ($wpdb->posts.ID = $wpdb->postmeta.post_id) WHERE ".
-				"  meta_key = 'custom_permalink' AND ".
-				"  meta_value != '' AND ".
-				"  ( LOWER(meta_value) = LEFT(LOWER('".mysql_real_escape_string($request_noslash)."'), LENGTH(meta_value)) OR ".
-				"    LOWER(meta_value) = LEFT(LOWER('".mysql_real_escape_string($request_noslash."/")."'), LENGTH(meta_value)) ) ".
-				"ORDER BY LENGTH(meta_value) DESC LIMIT 1";
+    $sql = "SELECT $wpdb->posts.ID, $wpdb->postmeta.meta_value, $wpdb->posts.post_type FROM $wpdb->posts  ".
+	            "LEFT JOIN $wpdb->postmeta ON ($wpdb->posts.ID = $wpdb->postmeta.post_id) WHERE ".
+	            "  meta_key = 'custom_permalink' AND ".
+	            "  meta_value != '' AND ".
+	            "  ( LOWER(meta_value) = LEFT(LOWER('".mysql_real_escape_string($request_noslash)."'), LENGTH(meta_value)) OR ".
+	            "    LOWER(meta_value) = LEFT(LOWER('".mysql_real_escape_string($request_noslash."/")."'), LENGTH(meta_value)) ) ".
+	            "  AND post_status != 'trash' AND post_type != 'nav_menu_item'".
+	            " ORDER BY LENGTH(meta_value) DESC, ".
+	            " FIELD(post_status,'publish','private','draft','auto-draft','inherit'),".
+	            " FIELD(post_type,'post','page'),".
+	            "$wpdb->posts.ID ASC  LIMIT 1";
 
 	$posts = $wpdb->get_results($sql);
 
