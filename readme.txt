@@ -3,8 +3,8 @@
 Donate link: http://atastypixel.com/blog/wordpress/plugins/custom-permalinks/
 Tags: permalink, url, link, address, custom, redirect
 Requires at least: 2.6
-Tested up to: 3.3.1
-Stable tag: 0.7.18
+Tested up to: 3.9
+Stable tag: 0.7.19
 
 Set custom permalinks on a per-post, per-tag or per-category basis.
 
@@ -28,6 +28,10 @@ within that category.
 3. Edit any post, page, tag or category to set a custom permalink.
 
 == Changelog ==
+
+= 0.7.19 =
+
+  * WP 3.9 compatibility fix, thanks to Sowmedia
 
 = 0.7.18 =
 
