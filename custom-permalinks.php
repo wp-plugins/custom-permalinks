@@ -4,7 +4,7 @@ Plugin Name: Custom Permalinks
 Plugin URI: http://atastypixel.com/blog/wordpress/plugins/custom-permalinks/
 Donate link: http://atastypixel.com/blog/wordpress/plugins/custom-permalinks/
 Description: Set custom permalinks on a per-post basis
-Version: 0.7.19
+Version: 0.7.20
 Author: Michael Tyson
 Author URI: http://atastypixel.com/blog
 */
@@ -268,7 +268,7 @@ function custom_permalinks_trailingslash($string, $type) {
 	global $_CPRegisteredURL;
 
 	$url = parse_url(get_bloginfo('url'));
-	$request = ltrim(substr($string, strlen($url['path'])),'/');
+	$request = ltrim(isset($url['path']) ? substr($string, strlen($url['path'])) : $string, '/');
 
 	if ( !trim($request) ) return $string;
 
@@ -742,15 +742,23 @@ function custom_permalinks_permalink_for_term($id) {
 }
 
 /**
- * Set up administration
+ * Set up administration menu
  *
  * @package CustomPermalinks
  * @since 0.1
  */
-function custom_permalinks_setup_admin() {
-	add_management_page( 'Custom Permalinks', 'Custom Permalinks', 5, 'custom_permalinks', 'custom_permalinks_options_page' );
-	if ( is_admin() )
-		wp_enqueue_script('admin-forms');
+function custom_permalinks_setup_admin_menu() {
+	add_management_page( 'Custom Permalinks', 'Custom Permalinks', 'edit_others_pages', 'custom_permalinks', 'custom_permalinks_options_page' );
+}
+
+/**
+ * Set up administration header
+ *
+ * @package CustomPermalinks
+ * @since 0.7.20
+ */
+function custom_permalinks_setup_admin_head() {
+	wp_enqueue_script('admin-forms');
 }
 
 # Check whether we're running within the WP environment, to avoid showing errors like
@@ -790,6 +798,7 @@ if (function_exists("add_action") && function_exists("add_filter")) {
 	add_action( 'delete_post', 'custom_permalinks_delete_permalink', 10);
 	add_action( 'delete_post_tag', 'custom_permalinks_delete_term' );
 	add_action( 'delete_post_category', 'custom_permalinks_delete_term' );
-	add_action( 'admin_menu', 'custom_permalinks_setup_admin' );
+	add_action( 'admin_head', 'custom_permalinks_setup_admin_head' );
+	add_action( 'admin_menu', 'custom_permalinks_setup_admin_menu' );
 }
 ?>
