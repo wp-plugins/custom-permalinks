@@ -3,7 +3,7 @@
 Donate link: http://atastypixel.com/blog/wordpress/plugins/custom-permalinks/
 Tags: permalink, url, link, address, custom, redirect
 Requires at least: 2.6
-Tested up to: 3.9
+Tested up to: 4.1
 Stable tag: 0.7.20
 
 Set custom permalinks on a per-post, per-tag or per-category basis.
@@ -33,6 +33,8 @@ within that category.
 
   * Addressed a noisy warning
   * Revised addition of admin forms js (don't use is_admin())
+  * Updated Roles and Capabilities from depreciated numerical to label capabilities (by OF-6)
+  * Added css/html to match WP 3.5+ layout (by OF-6)
 
 = 0.7.19 =
 

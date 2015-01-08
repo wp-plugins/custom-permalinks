@@ -242,12 +242,12 @@ function custom_permalinks_request($query) {
     }
 
     // Re-run the filter, now with original environment in place
-    remove_filter( 'request', 'custom_permalinks_request', 10, 1 );
+    remove_filter( 'request', 'custom_permalinks_request', 'edit_files', 1 );
     global $wp;
     $wp->parse_request();
     $query = $wp->query_vars;
-    add_filter( 'request', 'custom_permalinks_request', 10, 1 );
-    
+    add_filter( 'request', 'custom_permalinks_request', 'edit_files', 1 );
+
     // Restore values
     $_SERVER['REQUEST_URI'] = $oldRequestUri; $_SERVER['QUERY_STRING'] = $oldQueryString;
     foreach ( $oldValues as $key => $value ) {
@@ -312,9 +312,9 @@ function custom_permalink_get_sample_permalink_html($html, $id, $new_title, $new
             $permalink = str_replace(array('%pagename%','%postname%'), $post_name, $permalink);
         }
     }
-  
-  return '<strong>' . __('Permalink:') . "</strong>\n" . $content . 
-       ( isset($view_post) ? "<span id='view-post-btn'><a href='$permalink' class='button' target='_blank'>$view_post</a></span>\n" : "" );
+
+  return '<strong>' . __('Permalink:') . "</strong>\n" . $content .
+       ( isset($view_post) ? "<span id='view-post-btn'><a href='$permalink' class='button button-small' target='_blank'>$view_post</a></span>\n" : "" );
 }
 
 
@@ -417,11 +417,13 @@ function custom_permalinks_form($permalink, $original="", $renderContainers=true
     <td>
   <?php endif; ?>
       <?php echo home_url() ?>/
-      <input type="text" class="text" value="<?php echo htmlspecialchars($permalink ? urldecode($permalink) : urldecode($original)) ?>" 
-        style="width: 250px; <?php if ( !$permalink ) echo 'color: #ddd;' ?>"
-        onfocus="if ( this.style.color = '#ddd' ) { this.style.color = '#000'; }" 
-        onblur="document.getElementById('custom_permalink').value = this.value; if ( this.value == '' || this.value == '<?php echo htmlspecialchars(urldecode($original)) ?>' ) { this.value = '<?php echo htmlspecialchars(urldecode($original)) ?>'; this.style.color = '#ddd'; }"/>
-  <?php if ( $renderContainers ) : ?>       
+      <span id="editable-post-name" title="Click to edit this part of the permalink">
+        <input type="text" id="new-post-slug" class="text" value="<?php echo htmlspecialchars($permalink ? urldecode($permalink) : urldecode($original)) ?>"
+          style="width: 250px; <?php if ( !$permalink ) echo 'color: #ddd;' ?>"
+          onfocus="if ( this.style.color = '#ddd' ) { this.style.color = '#000'; }"
+          onblur="document.getElementById('custom_permalink').value = this.value; if ( this.value == '' || this.value == '<?php echo htmlspecialchars(urldecode($original)) ?>' ) { this.value = '<?php echo htmlspecialchars(urldecode($original)) ?>'; this.style.color = '#ddd'; }"/>
+      </span>
+  <?php if ( $renderContainers ) : ?>
       <br />
       <small><?php _e('Leave blank to disable', 'custom-permalink') ?></small>
       
@@ -670,11 +672,11 @@ function custom_permalinks_admin_rows() {
  * @since 0.1
  */
 function custom_permalinks_original_post_link($post_id) {
-  remove_filter( 'post_link', 'custom_permalinks_post_link', 10, 2 ); // original hook
-  remove_filter( 'post_type_link', 'custom_permalinks_post_link', 10, 2 );
+  remove_filter( 'post_link', 'custom_permalinks_post_link', 'edit_files', 2 ); // original hook
+  remove_filter( 'post_type_link', 'custom_permalinks_post_link', 'edit_files', 2 );
   $originalPermalink = ltrim(str_replace(home_url(), '', get_permalink( $post_id )), '/');
-  add_filter( 'post_link', 'custom_permalinks_post_link', 10, 2 ); // original hook
-  add_filter( 'post_type_link', 'custom_permalinks_post_link', 10, 2 );
+  add_filter( 'post_link', 'custom_permalinks_post_link', 'edit_files', 2 ); // original hook
+  add_filter( 'post_type_link', 'custom_permalinks_post_link', 'edit_files', 2 );
   return $originalPermalink;
 }
 
@@ -685,11 +687,11 @@ function custom_permalinks_original_post_link($post_id) {
  * @since 0.4
  */
 function custom_permalinks_original_page_link($post_id) {
-  remove_filter( 'page_link', 'custom_permalinks_page_link', 10, 2 );
-  remove_filter( 'user_trailingslashit', 'custom_permalinks_trailingslash', 10, 2 );
+  remove_filter( 'page_link', 'custom_permalinks_page_link', 'edit_files', 2 );
+  remove_filter( 'user_trailingslashit', 'custom_permalinks_trailingslash', 'edit_files', 2 );
   $originalPermalink = ltrim(str_replace(home_url(), '', get_permalink( $post_id )), '/');
-  add_filter( 'user_trailingslashit', 'custom_permalinks_trailingslash', 10, 2 );
-  add_filter( 'page_link', 'custom_permalinks_page_link', 10, 2 );
+  add_filter( 'user_trailingslashit', 'custom_permalinks_trailingslash', 'edit_files', 2 );
+  add_filter( 'page_link', 'custom_permalinks_page_link', 'edit_files', 2 );
   return $originalPermalink;
 }
 
@@ -701,11 +703,11 @@ function custom_permalinks_original_page_link($post_id) {
  * @since 0.1
  */
 function custom_permalinks_original_tag_link($tag_id) {
-  remove_filter( 'tag_link', 'custom_permalinks_term_link', 10, 2 );
-  remove_filter( 'user_trailingslashit', 'custom_permalinks_trailingslash', 10, 2 );
+  remove_filter( 'tag_link', 'custom_permalinks_term_link', 'edit_files', 2 );
+  remove_filter( 'user_trailingslashit', 'custom_permalinks_trailingslash', 'edit_files', 2 );
   $originalPermalink = ltrim(str_replace(home_url(), '', get_tag_link($tag_id)), '/');
-  add_filter( 'user_trailingslashit', 'custom_permalinks_trailingslash', 10, 2 );
-  add_filter( 'tag_link', 'custom_permalinks_term_link', 10, 2 );
+  add_filter( 'user_trailingslashit', 'custom_permalinks_trailingslash', 'edit_files', 2 );
+  add_filter( 'tag_link', 'custom_permalinks_term_link', 'edit_files', 2 );
   return $originalPermalink;
 }
 
@@ -716,11 +718,11 @@ function custom_permalinks_original_tag_link($tag_id) {
  * @since 0.1
  */
 function custom_permalinks_original_category_link($category_id) {
-  remove_filter( 'category_link', 'custom_permalinks_term_link', 10, 2 );
-  remove_filter( 'user_trailingslashit', 'custom_permalinks_trailingslash', 10, 2 );
+  remove_filter( 'category_link', 'custom_permalinks_term_link', 'edit_files', 2 );
+  remove_filter( 'user_trailingslashit', 'custom_permalinks_trailingslash', 'edit_files', 2 );
   $originalPermalink = ltrim(str_replace(home_url(), '', get_category_link($category_id)), '/');
-  add_filter( 'user_trailingslashit', 'custom_permalinks_trailingslash', 10, 2 );
-  add_filter( 'category_link', 'custom_permalinks_term_link', 10, 2 );
+  add_filter( 'user_trailingslashit', 'custom_permalinks_trailingslash', 'edit_files', 2 );
+  add_filter( 'category_link', 'custom_permalinks_term_link', 'edit_files', 2 );
   return $originalPermalink;
 }
 
@@ -767,20 +769,20 @@ function custom_permalinks_setup_admin_head() {
 
 if (function_exists("add_action") && function_exists("add_filter")) {
   add_action( 'template_redirect', 'custom_permalinks_redirect', 5 );
-  add_filter( 'post_link', 'custom_permalinks_post_link', 10, 2 );
-  add_filter( 'post_type_link', 'custom_permalinks_post_link', 10, 2 );
-  add_filter( 'page_link', 'custom_permalinks_page_link', 10, 2 );
-  add_filter( 'tag_link', 'custom_permalinks_term_link', 10, 2 );
-  add_filter( 'category_link', 'custom_permalinks_term_link', 10, 2 );
-  add_filter( 'request', 'custom_permalinks_request', 10, 1 );
-  add_filter( 'user_trailingslashit', 'custom_permalinks_trailingslash', 10, 2 );
+  add_filter( 'post_link', 'custom_permalinks_post_link', 'edit_files', 2 );
+  add_filter( 'post_type_link', 'custom_permalinks_post_link', 'edit_files', 2 );
+  add_filter( 'page_link', 'custom_permalinks_page_link', 'edit_files', 2 );
+  add_filter( 'tag_link', 'custom_permalinks_term_link', 'edit_files', 2 );
+  add_filter( 'category_link', 'custom_permalinks_term_link', 'edit_files', 2 );
+  add_filter( 'request', 'custom_permalinks_request', 'edit_files', 1 );
+  add_filter( 'user_trailingslashit', 'custom_permalinks_trailingslash', 'edit_files', 2 );
 
   if (function_exists("get_bloginfo")) {
     $v = explode('.', get_bloginfo('version'));
   }
 
   if ( $v[0] >= 2 ) {
-      add_filter( 'get_sample_permalink_html', 'custom_permalink_get_sample_permalink_html', 10, 4 );
+      add_filter( 'get_sample_permalink_html', 'custom_permalink_get_sample_permalink_html', 'edit_files', 4 );
   } else {
       add_action( 'edit_form_advanced', 'custom_permalinks_post_options' );
       add_action( 'edit_page_form', 'custom_permalinks_page_options' );
@@ -795,7 +797,7 @@ if (function_exists("add_action") && function_exists("add_filter")) {
   add_action( 'edited_category', 'custom_permalinks_save_category' );
   add_action( 'create_post_tag', 'custom_permalinks_save_tag' );
   add_action( 'create_category', 'custom_permalinks_save_category' );
-  add_action( 'delete_post', 'custom_permalinks_delete_permalink', 10);
+  add_action( 'delete_post', 'custom_permalinks_delete_permalink', 'edit_files');
   add_action( 'delete_post_tag', 'custom_permalinks_delete_term' );
   add_action( 'delete_post_category', 'custom_permalinks_delete_term' );
   add_action( 'admin_head', 'custom_permalinks_setup_admin_head' );
